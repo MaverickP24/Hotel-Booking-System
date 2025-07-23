@@ -114,26 +114,6 @@ const About = () => {
           ))}
         </div>
       </div>
-      
-      {/* Our Team */}
-      <div className="mt-16">
-        <h2 className="font-playfair text-3xl mb-8 text-center">Meet Our Team</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {teamMembers.map((member) => (
-            <div key={member.id} className="text-center">
-              <div className="mb-4 rounded-full overflow-hidden w-48 h-48 mx-auto">
-                <img 
-                  src={member.image} 
-                  alt={member.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <h3 className="font-playfair text-xl">{member.name}</h3>
-              <p className="text-gray-500">{member.role}</p>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   )
 }

@@ -140,6 +140,119 @@ export const hotelDummyData = {
     "__v": 0
 }
 
+// Additional Hotel Dummy Data
+const additionalHotels = [
+    {
+        "_id": "hotel_001",
+        "name": "Grand Palace Resort",
+        "address": "Ocean Drive 456, Luxury District",
+        "contact": "+1234567890",
+        "owner": userDummyData,
+        "city": "Dubai",
+        "createdAt": "2025-04-10T06:22:11.663Z",
+        "updatedAt": "2025-04-10T06:22:11.663Z",
+        "__v": 0
+    },
+    {
+        "_id": "hotel_002", 
+        "name": "Marina Bay Suites",
+        "address": "Harbor Street 789, Marina District",
+        "contact": "+1234567891",
+        "owner": userDummyData,
+        "city": "Singapore",
+        "createdAt": "2025-04-10T06:22:11.663Z",
+        "updatedAt": "2025-04-10T06:22:11.663Z",
+        "__v": 0
+    },
+    {
+        "_id": "hotel_003",
+        "name": "Thames View Hotel",
+        "address": "River Walk 321, Westminster",
+        "contact": "+1234567892", 
+        "owner": userDummyData,
+        "city": "London",
+        "createdAt": "2025-04-10T06:22:11.663Z",
+        "updatedAt": "2025-04-10T06:22:11.663Z",
+        "__v": 0
+    }
+];
+
+// Additional Rooms Dummy Data
+const additionalRooms = [
+    {
+        "_id": "room_001",
+        "hotel": additionalHotels[0],
+        "roomType": "Presidential Suite",
+        "pricePerNight": 899,
+        "amenities": ["Free WiFi", "Free Breakfast", "Room Service", "Pool Access"],
+        "images": [roomImg1, roomImg2, roomImg3, roomImg4],
+        "isAvailable": true,
+        "createdAt": "2025-04-10T06:26:04.013Z",
+        "updatedAt": "2025-04-10T06:26:04.013Z",
+        "__v": 0
+    },
+    {
+        "_id": "room_002",
+        "hotel": additionalHotels[0],
+        "roomType": "Ocean View Suite",
+        "pricePerNight": 699,
+        "amenities": ["Free WiFi", "Mountain View", "Pool Access"],
+        "images": [roomImg2, roomImg3, roomImg4, roomImg1],
+        "isAvailable": true,
+        "createdAt": "2025-04-10T06:26:04.013Z",
+        "updatedAt": "2025-04-10T06:26:04.013Z",
+        "__v": 0
+    },
+    {
+        "_id": "room_003",
+        "hotel": additionalHotels[1],
+        "roomType": "Marina Suite",
+        "pricePerNight": 549,
+        "amenities": ["Free WiFi", "Free Breakfast", "Room Service"],
+        "images": [roomImg3, roomImg4, roomImg1, roomImg2],
+        "isAvailable": true,
+        "createdAt": "2025-04-10T06:26:04.013Z",
+        "updatedAt": "2025-04-10T06:26:04.013Z",
+        "__v": 0
+    },
+    {
+        "_id": "room_004",
+        "hotel": additionalHotels[1],
+        "roomType": "City View Room",
+        "pricePerNight": 449,
+        "amenities": ["Free WiFi", "Room Service", "Pool Access"],
+        "images": [roomImg4, roomImg1, roomImg2, roomImg3],
+        "isAvailable": true,
+        "createdAt": "2025-04-10T06:26:04.013Z",
+        "updatedAt": "2025-04-10T06:26:04.013Z",
+        "__v": 0
+    },
+    {
+        "_id": "room_005",
+        "hotel": additionalHotels[2],
+        "roomType": "Thames View Suite",
+        "pricePerNight": 649,
+        "amenities": ["Free WiFi", "Free Breakfast", "Mountain View"],
+        "images": [roomImg1, roomImg3, roomImg2, roomImg4],
+        "isAvailable": true,
+        "createdAt": "2025-04-10T06:26:04.013Z",
+        "updatedAt": "2025-04-10T06:26:04.013Z",
+        "__v": 0
+    },
+    {
+        "_id": "room_006",
+        "hotel": additionalHotels[2],
+        "roomType": "Executive Room",
+        "pricePerNight": 349,
+        "amenities": ["Free WiFi", "Room Service"],
+        "images": [roomImg2, roomImg4, roomImg1, roomImg3],
+        "isAvailable": true,
+        "createdAt": "2025-04-10T06:26:04.013Z",
+        "updatedAt": "2025-04-10T06:26:04.013Z",
+        "__v": 0
+    }
+];
+
 // Rooms Dummy Data
 export const roomsDummyData = [
     {
@@ -189,10 +302,178 @@ export const roomsDummyData = [
         "createdAt": "2025-04-10T06:23:20.252Z",
         "updatedAt": "2025-04-10T06:23:20.252Z",
         "__v": 0
+    },
+    ...additionalRooms,
+    // Add 14 more rooms with different hotels
+    {
+        "_id": "room_007",
+        "hotel": { ...hotelDummyData, "_id": "hotel_004", "name": "Skyline Tower", "city": "Dubai", "address": "Downtown Boulevard 567, Business District" },
+        "roomType": "Penthouse Suite",
+        "pricePerNight": 1299,
+        "amenities": ["Free WiFi", "Free Breakfast", "Room Service", "Mountain View", "Pool Access"],
+        "images": [roomImg1, roomImg2, roomImg3, roomImg4],
+        "isAvailable": true,
+        "createdAt": "2025-04-10T06:26:04.013Z",
+        "updatedAt": "2025-04-10T06:26:04.013Z",
+        "__v": 0
+    },
+    {
+        "_id": "room_008",
+        "hotel": { ...hotelDummyData, "_id": "hotel_005", "name": "Garden Paradise Resort", "city": "Singapore", "address": "Botanical Gardens Road 890, Green District" },
+        "roomType": "Garden Villa",
+        "pricePerNight": 799,
+        "amenities": ["Free WiFi", "Free Breakfast", "Pool Access"],
+        "images": [roomImg2, roomImg3, roomImg4, roomImg1],
+        "isAvailable": true,
+        "createdAt": "2025-04-10T06:26:04.013Z",
+        "updatedAt": "2025-04-10T06:26:04.013Z",
+        "__v": 0
+    },
+    {
+        "_id": "room_009",
+        "hotel": { ...hotelDummyData, "_id": "hotel_006", "name": "Royal Westminster", "city": "London", "address": "Parliament Square 234, Westminster" },
+        "roomType": "Royal Suite",
+        "pricePerNight": 999,
+        "amenities": ["Free WiFi", "Room Service", "Mountain View"],
+        "images": [roomImg3, roomImg4, roomImg1, roomImg2],
+        "isAvailable": true,
+        "createdAt": "2025-04-10T06:26:04.013Z",
+        "updatedAt": "2025-04-10T06:26:04.013Z",
+        "__v": 0
+    },
+    {
+        "_id": "room_010",
+        "hotel": { ...hotelDummyData, "_id": "hotel_007", "name": "Central Park Plaza", "city": "New York", "address": "Fifth Avenue 678, Manhattan" },
+        "roomType": "Park View Suite",
+        "pricePerNight": 849,
+        "amenities": ["Free WiFi", "Free Breakfast", "Room Service"],
+        "images": [roomImg4, roomImg1, roomImg2, roomImg3],
+        "isAvailable": true,
+        "createdAt": "2025-04-10T06:26:04.013Z",
+        "updatedAt": "2025-04-10T06:26:04.013Z",
+        "__v": 0
+    },
+    {
+        "_id": "room_011",
+        "hotel": { ...hotelDummyData, "_id": "hotel_008", "name": "Desert Oasis Resort", "city": "Dubai", "address": "Desert Highway 345, Luxury Oasis" },
+        "roomType": "Desert Villa",
+        "pricePerNight": 1199,
+        "amenities": ["Free WiFi", "Pool Access", "Room Service"],
+        "images": [roomImg1, roomImg3, roomImg2, roomImg4],
+        "isAvailable": true,
+        "createdAt": "2025-04-10T06:26:04.013Z",
+        "updatedAt": "2025-04-10T06:26:04.013Z",
+        "__v": 0
+    },
+    {
+        "_id": "room_012",
+        "hotel": { ...hotelDummyData, "_id": "hotel_009", "name": "Infinity Pool Resort", "city": "Singapore", "address": "Sentosa Island 123, Resort World" },
+        "roomType": "Infinity Suite",
+        "pricePerNight": 699,
+        "amenities": ["Free WiFi", "Free Breakfast", "Pool Access", "Mountain View"],
+        "images": [roomImg2, roomImg4, roomImg1, roomImg3],
+        "isAvailable": true,
+        "createdAt": "2025-04-10T06:26:04.013Z",
+        "updatedAt": "2025-04-10T06:26:04.013Z",
+        "__v": 0
+    },
+    {
+        "_id": "room_013",
+        "hotel": { ...hotelDummyData, "_id": "hotel_010", "name": "Tower Bridge Hotel", "city": "London", "address": "Tower Bridge Road 456, Southwark" },
+        "roomType": "Bridge View Room",
+        "pricePerNight": 549,
+        "amenities": ["Free WiFi", "Room Service"],
+        "images": [roomImg3, roomImg1, roomImg4, roomImg2],
+        "isAvailable": true,
+        "createdAt": "2025-04-10T06:26:04.013Z",
+        "updatedAt": "2025-04-10T06:26:04.013Z",
+        "__v": 0
+    },
+    {
+        "_id": "room_014",
+        "hotel": { ...hotelDummyData, "_id": "hotel_011", "name": "Times Square Grand", "city": "New York", "address": "Broadway 789, Times Square" },
+        "roomType": "Broadway Suite",
+        "pricePerNight": 749,
+        "amenities": ["Free WiFi", "Free Breakfast", "Room Service", "Mountain View"],
+        "images": [roomImg4, roomImg2, roomImg3, roomImg1],
+        "isAvailable": true,
+        "createdAt": "2025-04-10T06:26:04.013Z",
+        "updatedAt": "2025-04-10T06:26:04.013Z",
+        "__v": 0
+    },
+    {
+        "_id": "room_015",
+        "hotel": { ...hotelDummyData, "_id": "hotel_012", "name": "Burj Al Arab View", "city": "Dubai", "address": "Jumeirah Beach Road 901, Jumeirah" },
+        "roomType": "Burj View Suite",
+        "pricePerNight": 1599,
+        "amenities": ["Free WiFi", "Free Breakfast", "Room Service", "Pool Access"],
+        "images": [roomImg1, roomImg4, roomImg2, roomImg3],
+        "isAvailable": true,
+        "createdAt": "2025-04-10T06:26:04.013Z",
+        "updatedAt": "2025-04-10T06:26:04.013Z",
+        "__v": 0
+    },
+    {
+        "_id": "room_016",
+        "hotel": { ...hotelDummyData, "_id": "hotel_013", "name": "Merlion Suites", "city": "Singapore", "address": "Marina Bay Sands 234, Financial District" },
+        "roomType": "Merlion View Room",
+        "pricePerNight": 599,
+        "amenities": ["Free WiFi", "Pool Access", "Mountain View"],
+        "images": [roomImg2, roomImg1, roomImg4, roomImg3],
+        "isAvailable": true,
+        "createdAt": "2025-04-10T06:26:04.013Z",
+        "updatedAt": "2025-04-10T06:26:04.013Z",
+        "__v": 0
+    },
+    {
+        "_id": "room_017",
+        "hotel": { ...hotelDummyData, "_id": "hotel_014", "name": "Hyde Park Luxury", "city": "London", "address": "Hyde Park Corner 567, Mayfair" },
+        "roomType": "Park Suite",
+        "pricePerNight": 899,
+        "amenities": ["Free WiFi", "Free Breakfast", "Room Service"],
+        "images": [roomImg3, roomImg2, roomImg1, roomImg4],
+        "isAvailable": true,
+        "createdAt": "2025-04-10T06:26:04.013Z",
+        "updatedAt": "2025-04-10T06:26:04.013Z",
+        "__v": 0
+    },
+    {
+        "_id": "room_018",
+        "hotel": { ...hotelDummyData, "_id": "hotel_015", "name": "Brooklyn Bridge Suites", "city": "New York", "address": "Brooklyn Heights 890, DUMBO" },
+        "roomType": "Bridge Suite",
+        "pricePerNight": 649,
+        "amenities": ["Free WiFi", "Room Service", "Pool Access"],
+        "images": [roomImg4, roomImg3, roomImg1, roomImg2],
+        "isAvailable": true,
+        "createdAt": "2025-04-10T06:26:04.013Z",
+        "updatedAt": "2025-04-10T06:26:04.013Z",
+        "__v": 0
+    },
+    {
+        "_id": "room_019",
+        "hotel": { ...hotelDummyData, "_id": "hotel_016", "name": "Palm Jumeirah Resort", "city": "Dubai", "address": "Palm Jumeirah 123, Atlantis District" },
+        "roomType": "Palm Villa",
+        "pricePerNight": 1399,
+        "amenities": ["Free WiFi", "Free Breakfast", "Pool Access", "Mountain View"],
+        "images": [roomImg1, roomImg2, roomImg4, roomImg3],
+        "isAvailable": true,
+        "createdAt": "2025-04-10T06:26:04.013Z",
+        "updatedAt": "2025-04-10T06:26:04.013Z",
+        "__v": 0
+    },
+    {
+        "_id": "room_020",
+        "hotel": { ...hotelDummyData, "_id": "hotel_017", "name": "Orchard Road Grand", "city": "Singapore", "address": "Orchard Road 456, Shopping District" },
+        "roomType": "Shopping Suite",
+        "pricePerNight": 499,
+        "amenities": ["Free WiFi", "Free Breakfast", "Room Service"],
+        "images": [roomImg2, roomImg3, roomImg1, roomImg4],
+        "isAvailable": true,
+        "createdAt": "2025-04-10T06:26:04.013Z",
+        "updatedAt": "2025-04-10T06:26:04.013Z",
+        "__v": 0
     }
-]
-
-
+];
 
 // User Bookings Dummy Data
 export const userBookingsDummyData = [
