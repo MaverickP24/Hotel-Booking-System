@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { assets } from '../assets/assets';
-import { useClerk, useUser, UserButton } from '@clerk/clerk-react';
+import { useAuth } from '../context/AuthContext';
+import UserButton from './UserButton';
 import { useState } from 'react';
 
 const Navbar = () => {
@@ -21,8 +22,7 @@ const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const {openSignIn} = useClerk();
-    const {user} = useUser();
+    const { openSignIn, user } = useAuth();
     const navigate = useNavigate();
     const locate = useLocation();
 
