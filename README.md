@@ -6,10 +6,10 @@ A full-stack MERN (MongoDB, Express.js, React.js, Node.js) hotel booking applica
 
 ## 🌐 Live Deployment
 
-- **Frontend (Vercel)**: [YOUR_VERCEL_URL_HERE](YOUR_VERCEL_URL_HERE)
+- **Frontend (Vercel)**: https://hotel-booking-system-tawny.vercel.app/
 - **Backend (Render)**: [https://hotel-booking-system-rv34.onrender.com](https://hotel-booking-system-rv34.onrender.com)
 - **API Health Check**: [https://hotel-booking-system-rv34.onrender.com/api/health](https://hotel-booking-system-rv34.onrender.com/api/health)
-- **GitHub Repository**: [YOUR_GITHUB_REPO_URL_HERE](YOUR_GITHUB_REPO_URL_HERE)
+- **GitHub Repository**: https://github.com/MaverickP24/Hotel-Booking-System
 
 > **Note**: Replace `YOUR_VERCEL_URL_HERE` with your actual Vercel deployment URL and `YOUR_GITHUB_REPO_URL_HERE` with your GitHub repository URL.
 
@@ -161,7 +161,7 @@ HotelBooking/
 
 ### **1. Clone the Repository**
 ```bash
-git clone https://github.com/your-username/hotel-booking-system.git
+git clone https://github.com/MaverickP24/Hotel-Booking-System/
 cd hotel-booking-system
 ```
 
