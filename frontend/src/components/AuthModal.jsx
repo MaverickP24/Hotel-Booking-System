@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 const AuthModal = () => {
-  const { showAuthModal, authMode, closeAuthModal, login, signup } = useAuth();
+  const { showAuthModal, authMode, closeAuthModal, login, signup, openSignIn, openSignUp } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -146,6 +146,7 @@ const AuthModal = () => {
                 onClick={() => {
                   setError('');
                   setFormData({ username: '', email: '', password: '', role: 'user' });
+                  openSignUp();
                 }}
                 className="text-blue-600 hover:underline"
               >
@@ -159,6 +160,7 @@ const AuthModal = () => {
                 onClick={() => {
                   setError('');
                   setFormData({ username: '', email: '', password: '', role: 'user' });
+                  openSignIn();
                 }}
                 className="text-blue-600 hover:underline"
               >
