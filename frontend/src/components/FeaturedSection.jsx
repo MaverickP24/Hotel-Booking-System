@@ -17,7 +17,7 @@ const FeaturedSection = () => {
             ))}
         </div>
 
-        <button onClick={()=>(navigate("/rooms"))} class="my-16 px-4 py-2 text-sm font-medium border border-gray-300 rounded bg-white hover:bg-gray-50 transition-all cursor-pointer">View All Destinations</button>
+        <button onClick={()=>(navigate("/featured"))} className="my-16 px-4 py-2 text-sm font-medium border border-gray-300 rounded bg-white hover:bg-gray-50 transition-all cursor-pointer">View All Featured Hotels</button>
         
     </div>
   )

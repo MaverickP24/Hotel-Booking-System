@@ -8,6 +8,8 @@ import About from './pages/About'
 import OwnerDashboard from './pages/OwnerDashboard'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
+import Featured from './pages/Featured'
+import AuthModal from './components/AuthModal'
 
 function App() {
   const isOwner = useLocation().pathname.includes("owner");
@@ -25,10 +27,12 @@ function App() {
           <Route path="/experience" element={<Experience/>} />
           <Route path="/about" element={<About/>} />
           <Route path="/owner" element={<OwnerDashboard/>} />
+          <Route path="/featured" element={<Featured />} />
         </Routes>
       </div>
       
       {!isOwner && <Footer/>}
+      <AuthModal />
     </>
   )
 }
