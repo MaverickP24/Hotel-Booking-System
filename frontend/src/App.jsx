@@ -9,6 +9,7 @@ import OwnerDashboard from './pages/OwnerDashboard'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Featured from './pages/Featured'
+import MyBookings from './pages/MyBookings'
 import AuthModal from './components/AuthModal'
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
           <Route path="/about" element={<About/>} />
           <Route path="/owner" element={<OwnerDashboard/>} />
           <Route path="/featured" element={<Featured />} />
+          <Route path="/my-bookings" element={<MyBookings />} />
         </Routes>
       </div>
       
