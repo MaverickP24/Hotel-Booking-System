@@ -70,9 +70,19 @@ export const authAPI = {
 export const hotelsAPI = {
   getAll: async (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
-    const response = await fetch(`${API_URL}/hotels?${queryString}`);
+    const url = queryString ? `${API_URL}/hotels?${queryString}` : `${API_URL}/hotels`;
+    const response = await fetch(url);
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Failed to fetch hotels');
+    return data;
+  },
+
+  getMine: async () => {
+    const response = await fetch(`${API_URL}/hotels/owner/my-hotels`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch your hotels');
     return data;
   },
 
@@ -120,9 +130,19 @@ export const hotelsAPI = {
 export const roomsAPI = {
   getAll: async (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
-    const response = await fetch(`${API_URL}/rooms?${queryString}`);
+    const url = queryString ? `${API_URL}/rooms?${queryString}` : `${API_URL}/rooms`;
+    const response = await fetch(url);
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Failed to fetch rooms');
+    return data;
+  },
+
+  getByHotel: async (hotelId) => {
+    const response = await fetch(`${API_URL}/rooms/hotel/${hotelId}`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch rooms for hotel');
     return data;
   },
 
@@ -168,12 +188,21 @@ export const roomsAPI = {
 
 // Bookings API
 export const bookingsAPI = {
-  getAll: async () => {
+  getUserBookings: async () => {
     const response = await fetch(`${API_URL}/bookings`, {
       headers: getAuthHeaders()
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Failed to fetch bookings');
+    return data;
+  },
+
+  getByHotel: async (hotelId) => {
+    const response = await fetch(`${API_URL}/bookings/hotel/${hotelId}`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch hotel bookings');
     return data;
   },
 
@@ -208,7 +237,7 @@ export const bookingsAPI = {
     return data;
   },
 
-  cancel: async (id) => {
+  cancelBooking: async (id) => {
     const response = await fetch(`${API_URL}/bookings/${id}`, {
       method: 'DELETE',
       headers: getAuthHeaders()

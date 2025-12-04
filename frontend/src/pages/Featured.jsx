@@ -1,27 +1,55 @@
-import React, { useState, useMemo } from 'react'
-import { assets, facilityIcons, roomsDummyData } from '../assets/assets'
+import React, { useState, useMemo, useEffect } from 'react'
+import { assets, facilityIcons } from '../assets/assets'
 import { useNavigate } from 'react-router-dom'
 import Title from '../components/Title'
+import { roomsAPI } from '../utils/api'
 
 const Featured = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
+  const [featuredRooms, setFeaturedRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Get featured rooms (first 8 rooms as featured)
-  const featuredRooms = useMemo(() => {
-    return roomsDummyData.slice(0, 8);
+  useEffect(() => {
+    const fetchFeaturedRooms = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const response = await roomsAPI.getAll({ available: true });
+        const rooms = response.data || [];
+        setFeaturedRooms(rooms.slice(0, 12));
+      } catch (err) {
+        setError(err.message || 'Failed to load featured rooms');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedRooms();
   }, []);
 
+  // Get featured rooms (first 8 rooms as featured)
+  const roomsToDisplay = useMemo(() => featuredRooms.slice(0, 8), [featuredRooms]);
+
   // Calculate pagination
-  const totalPages = Math.ceil(featuredRooms.length / itemsPerPage);
+  const totalPages = Math.ceil(roomsToDisplay.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentRooms = featuredRooms.slice(startIndex, startIndex + itemsPerPage);
+  const currentRooms = roomsToDisplay.slice(startIndex, startIndex + itemsPerPage);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
     window.scrollTo(0, 0);
   };
+
+  if (loading) {
+    return (
+      <div className="pt-28 flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900" />
+      </div>
+    );
+  }
 
   return (
     <div className="pt-28 px-4 md:px-16 lg:px-24 xl:px-32 pb-16">
@@ -29,6 +57,12 @@ const Featured = () => {
         title="Featured Hotels" 
         subTitle="Discover our handpicked selection of extraordinary properties offering unmatched luxury and unforgettable experiences."
       />
+
+      {error && (
+        <div className="mt-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+          {error}
+        </div>
+      )}
 
       <div className="mt-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

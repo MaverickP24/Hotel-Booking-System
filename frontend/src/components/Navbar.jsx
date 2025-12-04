@@ -23,6 +23,7 @@ const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const { openSignIn, user } = useAuth();
+    const isOwner = user && (user.role === 'hotelOwner' || user.role === 'admin');
     const navigate = useNavigate();
     const locate = useLocation();
 
@@ -61,7 +62,7 @@ const Navbar = () => {
                         <div className={`${isScrolled ? "bg-gray-700" : "bg-white"} h-0.5 ${locate.pathname === link.path ? "w-full" : "w-0"} group-hover:w-full transition-all duration-300`} />
                     </Link>
                 ))}
-                {user && <button onClick={()=>(navigate("/owner"))} className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${isScrolled ? 'text-black' : 'text-white'} transition-all`}>
+                {isOwner && <button onClick={()=>(navigate("/owner"))} className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${isScrolled ? 'text-black' : 'text-white'} transition-all`}>
                     Dashboard
                 </button>}
             </div>
@@ -103,7 +104,7 @@ const Navbar = () => {
                     </Link>
                 ))}
 
-                {user && <button onClick={()=>{navigate("/owner"); setIsMenuOpen(false)}} className="border px-4 py-1 text-sm font-light rounded-full cursor-pointer transition-all">
+                {isOwner && <button onClick={()=>{navigate("/owner"); setIsMenuOpen(false)}} className="border px-4 py-1 text-sm font-light rounded-full cursor-pointer transition-all">
                     Dashboard
                 </button>}
 

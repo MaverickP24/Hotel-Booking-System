@@ -1,12 +1,16 @@
 import React, { useState, useMemo, useEffect } from 'react'
-import { assets, facilityIcons, roomsDummyData } from '../assets/assets'
+import { assets, facilityIcons } from '../assets/assets'
 import { useNavigate } from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom'
+import { roomsAPI } from '../utils/api'
 
 const Hotels = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
+  const [rooms, setRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [filters, setFilters] = useState({
     city: '',
     priceRange: '',
@@ -16,9 +20,26 @@ const Hotels = () => {
   const itemsPerPage = 9;
   const [searchParams] = useSearchParams();
 
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const response = await roomsAPI.getAll({ available: true });
+        setRooms(response.data || []);
+      } catch (err) {
+        setError(err.message || 'Failed to load hotels');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRooms();
+  }, []);
+
   // Get unique values for filter options
-  const cities = [...new Set(roomsDummyData.map(room => room.hotel.city))];
-  const allAmenities = [...new Set(roomsDummyData.flatMap(room => room.amenities))];
+  const cities = [...new Set(rooms.map(room => room.hotel?.city).filter(Boolean))];
+  const allAmenities = [...new Set(rooms.flatMap(room => room.amenities || []))];
 
   // Apply URL parameters on component mount
   useEffect(() => {
@@ -42,18 +63,18 @@ const Hotels = () => {
 
   // Filter and search logic
   const filteredHotels = useMemo(() => {
-    let filtered = roomsDummyData.filter(room => {
+    let filtered = rooms.filter(room => {
       // Search term filter
       const matchesSearch = searchTerm === '' || 
-        room.hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        room.hotel.city.toLowerCase().includes(searchTerm.toLowerCase());
+        room.hotel?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        room.hotel?.city?.toLowerCase().includes(searchTerm.toLowerCase());
 
       // City filter - exact match
-      const matchesCity = filters.city === '' || room.hotel.city === filters.city;
+      const matchesCity = filters.city === '' || room.hotel?.city === filters.city;
 
       // Price range filter
       const matchesPrice = filters.priceRange === '' || (() => {
-        const price = room.pricePerNight;
+        const price = room.pricePerNight || 0;
         switch (filters.priceRange) {
           case 'under-200': return price < 200;
           case '200-400': return price >= 200 && price <= 400;
@@ -65,7 +86,7 @@ const Hotels = () => {
 
       // Amenities filter
       const matchesAmenities = filters.amenities.length === 0 || 
-        filters.amenities.every(amenity => room.amenities.includes(amenity));
+        filters.amenities.every(amenity => room.amenities?.includes(amenity));
 
       return matchesSearch && matchesCity && matchesPrice && matchesAmenities;
     });
@@ -73,9 +94,9 @@ const Hotels = () => {
     // Sort results
     filtered.sort((a, b) => {
       switch (filters.sortBy) {
-        case 'price-low': return a.pricePerNight - b.pricePerNight;
-        case 'price-high': return b.pricePerNight - a.pricePerNight;
-        case 'name': return a.hotel.name.localeCompare(b.hotel.name);
+        case 'price-low': return (a.pricePerNight || 0) - (b.pricePerNight || 0);
+        case 'price-high': return (b.pricePerNight || 0) - (a.pricePerNight || 0);
+        case 'name': return (a.hotel?.name || '').localeCompare(b.hotel?.name || '');
         default: return 0;
       }
     });
@@ -119,6 +140,14 @@ const Hotels = () => {
     });
     setCurrentPage(1);
   };
+  
+  if (loading) {
+    return (
+      <div className="pt-28 flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900" />
+      </div>
+    );
+  }
   
   return (
     <div className="pt-28 px-4 md:px-16 lg:px-24 xl:px-32 pb-16">
@@ -222,6 +251,12 @@ const Hotels = () => {
         <div className="mt-4 text-sm text-gray-600">
           {filteredHotels.length} hotel{filteredHotels.length !== 1 ? 's' : ''} found
         </div>
+
+        {error && (
+          <div className="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+            {error}
+          </div>
+        )}
       </div>
 
       {currentHotels.length === 0 ? (
@@ -241,8 +276,8 @@ const Hotels = () => {
               <div key={room._id} className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all">
                 <div className="relative">
                   <img 
-                    src={room.images[0]} 
-                    alt={room.hotel.name}
+                    src={room.images?.[0]} 
+                    alt={room.hotel?.name}
                     className="w-full h-60 object-cover cursor-pointer"
                     onClick={() => {navigate(`/rooms/${room._id}`); scrollTo(0,0)}}
                   />
@@ -259,7 +294,7 @@ const Hotels = () => {
                       className="font-playfair text-xl text-gray-800 cursor-pointer"
                       onClick={() => {navigate(`/rooms/${room._id}`); scrollTo(0,0)}}
                     >
-                      {room.hotel.name}
+                      {room.hotel?.name}
                     </h3>
                     <div className="flex items-center gap-1">
                       <img src={assets.starIconFilled} alt="rating" className="w-4 h-4" />
@@ -269,11 +304,11 @@ const Hotels = () => {
                   
                   <div className="flex items-center gap-1 text-gray-500 text-sm mb-3">
                     <img src={assets.locationIcon} alt="location" className="w-4 h-4" />
-                    <span>{room.hotel.city}</span>
+                    <span>{room.hotel?.city}</span>
                   </div>
                   
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {room.amenities.slice(0, 3).map((amenity, i) => (
+                    {(room.amenities || []).slice(0, 3).map((amenity, i) => (
                       <span key={i} className="text-xs bg-[#F5F5FF]/70 px-2 py-1 rounded-md flex items-center gap-1">
                         <img src={facilityIcons[amenity]} alt={amenity} className="w-3 h-3" />
                         {amenity}

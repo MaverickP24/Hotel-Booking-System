@@ -10,8 +10,12 @@ const router = express.Router();
 // @access  Public
 router.get('/', async (req, res) => {
   try {
-    const { city, minPrice, maxPrice, roomType, available } = req.query;
-    let query = {};
+    const { city, minPrice, maxPrice, roomType, available, amenities, hotel } = req.query;
+    const query = {};
+
+    if (hotel) {
+      query.hotel = hotel;
+    }
     
     // Filter by availability
     if (available !== undefined) {
@@ -29,15 +33,25 @@ router.get('/', async (req, res) => {
       if (minPrice) query.pricePerNight.$gte = Number(minPrice);
       if (maxPrice) query.pricePerNight.$lte = Number(maxPrice);
     }
+
+    // Filter by amenities (expects comma separated values)
+    if (amenities) {
+      const amenitiesArray = Array.isArray(amenities)
+        ? amenities
+        : amenities.split(',').map(item => item.trim()).filter(Boolean);
+      if (amenitiesArray.length) {
+        query.amenities = { $all: amenitiesArray };
+      }
+    }
     
     let rooms = await Room.find(query).populate({
       path: 'hotel',
       populate: { path: 'owner', select: 'username email' }
     });
     
-    // Filter by city if provided
+    // Filter by city if provided (requires populated hotel)
     if (city) {
-      rooms = rooms.filter(room => room.hotel.city === city);
+      rooms = rooms.filter(room => room.hotel?.city === city);
     }
     
     res.status(200).json({

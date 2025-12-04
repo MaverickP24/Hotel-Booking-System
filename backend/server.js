@@ -1,15 +1,17 @@
+import dotenv from 'dotenv';
+
+// CRITICAL: Load environment variables FIRST
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import connectDB from './config/db.js';
+import passport from './config/googleAuth.js';
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/user.js';
 import hotelRoutes from './routes/hotel.js';
 import roomRoutes from './routes/room.js';
 import bookingRoutes from './routes/booking.js';
-
-// Load environment variables
-dotenv.config();
 
 // Initialize express app
 const app = express();
@@ -21,6 +23,7 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(passport.initialize());
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -31,8 +34,8 @@ app.use('/api/bookings', bookingRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
+  res.json({
+    status: 'OK',
     message: 'Hotel Booking API is running',
     timestamp: new Date().toISOString()
   });

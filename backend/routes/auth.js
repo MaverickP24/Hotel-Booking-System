@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { body, validationResult } from 'express-validator';
 import User from '../models/User.js';
 import { protect } from '../middleware/auth.js';
+import passport from 'passport';
 
 const router = express.Router();
 
@@ -103,6 +104,14 @@ router.post('/login', [
       });
     }
 
+    // Check if user is a Google OAuth user (no password set)
+    if (user.authProvider === 'google' && !user.password) {
+      return res.status(400).json({
+        success: false,
+        message: 'This account uses Google Sign-In. Please use "Sign in with Google" button.'
+      });
+    }
+
     // Check password
     const isPasswordMatch = await user.comparePassword(password);
     if (!isPasswordMatch) {
@@ -143,7 +152,7 @@ router.post('/login', [
 router.get('/me', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
-    
+
     res.status(200).json({
       success: true,
       data: user
@@ -156,6 +165,42 @@ router.get('/me', protect, async (req, res) => {
       error: error.message
     });
   }
+});
+
+// @route   GET /api/auth/google
+// @desc    Initiate Google OAuth flow
+// @access  Public
+router.get('/google', (req, res, next) => {
+  const redirectUrl = req.query.redirect || process.env.FRONTEND_URL || 'http://localhost:5173';
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    session: false,
+    prompt: 'select_account',
+    state: redirectUrl
+  })(req, res, next);
+});
+
+// @route   GET /api/auth/google/callback
+// @desc    Handle Google OAuth callback
+// @access  Public
+router.get('/google/callback', (req, res, next) => {
+  passport.authenticate('google', { session: false }, (err, user, info) => {
+    const fallbackUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const redirectBase = req.query.state || fallbackUrl;
+
+    if (err || !user) {
+      const message = err?.message || info?.message || 'Access denied';
+      return res.redirect(`${redirectBase}?auth=failed&error=${encodeURIComponent(message)}`);
+    }
+
+    try {
+      const token = generateToken(user._id);
+      return res.redirect(`${redirectBase}?token=${token}&auth=success`);
+    } catch (error) {
+      console.error('Google OAuth Callback Error:', error);
+      return res.redirect(`${redirectBase}?auth=failed&error=${encodeURIComponent(error.message)}`);
+    }
+  })(req, res, next);
 });
 
 export default router;

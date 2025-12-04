@@ -1,6 +1,7 @@
 import express from 'express';
 import Booking from '../models/Booking.js';
 import Room from '../models/Room.js';
+import Hotel from '../models/Hotel.js';
 import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -228,6 +229,22 @@ router.delete('/:id', protect, async (req, res) => {
 // @access  Private
 router.get('/hotel/:hotelId', protect, async (req, res) => {
   try {
+    const hotel = await Hotel.findById(req.params.hotelId);
+
+    if (!hotel) {
+      return res.status(404).json({
+        success: false,
+        message: 'Hotel not found'
+      });
+    }
+
+    if (hotel.owner.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to view bookings for this hotel'
+      });
+    }
+
     const bookings = await Booking.find({ hotel: req.params.hotelId })
       .populate('room')
       .populate('hotel')

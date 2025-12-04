@@ -18,12 +18,34 @@ export const AuthProvider = ({ children }) => {
   const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
 
   useEffect(() => {
-    // Check if user is logged in on mount
+    const initializeAuth = async () => {
     const storedUser = authAPI.getStoredUser();
     if (storedUser) {
       setUser(storedUser);
-    }
+        setLoading(false);
+        return;
+      }
+
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const response = await authAPI.getCurrentUser();
+          const userData = {
+            ...response.data,
+            token
+          };
+          localStorage.setItem('user', JSON.stringify(userData));
+          setUser(userData);
+        } catch (error) {
+          authAPI.logout();
+          console.error('Failed to rehydrate session', error);
+        }
+      }
+
     setLoading(false);
+    };
+
+    initializeAuth();
   }, []);
 
   const login = async (email, password) => {
