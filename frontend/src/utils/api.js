@@ -129,8 +129,24 @@ export const hotelsAPI = {
 // Rooms API
 export const roomsAPI = {
   getAll: async (params = {}) => {
-    const queryString = new URLSearchParams(params).toString();
+    // Convert array parameters to comma-separated strings if needed
+    const queryParams = new URLSearchParams();
+
+    Object.keys(params).forEach(key => {
+      if (params[key] !== null && params[key] !== undefined && params[key] !== '') {
+        if (Array.isArray(params[key])) {
+          if (params[key].length > 0) {
+            queryParams.append(key, params[key].join(','));
+          }
+        } else {
+          queryParams.append(key, params[key]);
+        }
+      }
+    });
+
+    const queryString = queryParams.toString();
     const url = queryString ? `${API_URL}/rooms?${queryString}` : `${API_URL}/rooms`;
+
     const response = await fetch(url);
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Failed to fetch rooms');

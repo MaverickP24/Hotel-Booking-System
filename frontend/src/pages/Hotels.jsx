@@ -11,22 +11,77 @@ const Hotels = () => {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalHotels, setTotalHotels] = useState(0);
   const [filters, setFilters] = useState({
     city: '',
     priceRange: '',
     amenities: [],
     sortBy: 'name'
   });
+
+  // Debounce search term to avoid too many API calls
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   const itemsPerPage = 9;
   const [searchParams] = useSearchParams();
 
+  // Fetch rooms whenever dependencies change
   useEffect(() => {
     const fetchRooms = async () => {
       try {
         setLoading(true);
         setError('');
-        const response = await roomsAPI.getAll({ available: true });
+
+        const params = {
+          page: currentPage,
+          limit: itemsPerPage,
+          available: true,
+          search: debouncedSearch,
+          city: filters.city,
+          sortBy: filters.sortBy === 'name' ? 'name' : 'price',
+          sortOrder: filters.sortBy === 'price-high' ? 'desc' : 'asc'
+        };
+
+        // Handle price range
+        if (filters.priceRange) {
+          switch (filters.priceRange) {
+            case 'under-200':
+              params.maxPrice = 200;
+              break;
+            case '200-400':
+              params.minPrice = 200;
+              params.maxPrice = 400;
+              break;
+            case '400-600':
+              params.minPrice = 400;
+              params.maxPrice = 600;
+              break;
+            case 'over-600':
+              params.minPrice = 600;
+              break;
+          }
+        }
+
+        // Handle amenities
+        if (filters.amenities.length > 0) {
+          params.amenities = filters.amenities;
+        }
+
+        const response = await roomsAPI.getAll(params);
         setRooms(response.data || []);
+
+        if (response.pagination) {
+          setTotalPages(response.pagination.pages);
+          setTotalHotels(response.pagination.total);
+        }
       } catch (err) {
         setError(err.message || 'Failed to load hotels');
       } finally {
@@ -35,81 +90,21 @@ const Hotels = () => {
     };
 
     fetchRooms();
-  }, []);
-
-  // Get unique values for filter options
-  const cities = [...new Set(rooms.map(room => room.hotel?.city).filter(Boolean))];
-  const allAmenities = [...new Set(rooms.flatMap(room => room.amenities || []))];
+  }, [currentPage, debouncedSearch, filters]);
 
   // Apply URL parameters on component mount
   useEffect(() => {
     const cityParam = searchParams.get('city');
-    const checkInParam = searchParams.get('checkIn');
-    const checkOutParam = searchParams.get('checkOut');
-    const guestsParam = searchParams.get('guests');
-
     if (cityParam) {
       setFilters(prev => ({ ...prev, city: cityParam }));
     }
-    
-    if (checkInParam || checkOutParam || guestsParam) {
-      console.log('Booking details:', { 
-        checkIn: checkInParam, 
-        checkOut: checkOutParam, 
-        guests: guestsParam 
-      });
-    }
   }, [searchParams]);
 
-  // Filter and search logic
-  const filteredHotels = useMemo(() => {
-    let filtered = rooms.filter(room => {
-      // Search term filter
-      const matchesSearch = searchTerm === '' || 
-        room.hotel?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        room.hotel?.city?.toLowerCase().includes(searchTerm.toLowerCase());
+  // Hardcoded lists for filters since we don't have all data client-side anymore
+  // In a real app, you might fetch these from a separate API endpoint (e.g., /api/cities, /api/amenities)
+  const cities = ['New York', 'London', 'Paris', 'Tokyo', 'Dubai', 'Mumbai', 'Delhi', 'Bangalore'];
+  const allAmenities = ['WiFi', 'Pool', 'Gym', 'Spa', 'Parking', 'Restaurant', 'AC', 'TV'];
 
-      // City filter - exact match
-      const matchesCity = filters.city === '' || room.hotel?.city === filters.city;
-
-      // Price range filter
-      const matchesPrice = filters.priceRange === '' || (() => {
-        const price = room.pricePerNight || 0;
-        switch (filters.priceRange) {
-          case 'under-200': return price < 200;
-          case '200-400': return price >= 200 && price <= 400;
-          case '400-600': return price >= 400 && price <= 600;
-          case 'over-600': return price > 600;
-          default: return true;
-        }
-      })();
-
-      // Amenities filter
-      const matchesAmenities = filters.amenities.length === 0 || 
-        filters.amenities.every(amenity => room.amenities?.includes(amenity));
-
-      return matchesSearch && matchesCity && matchesPrice && matchesAmenities;
-    });
-
-    // Sort results
-    filtered.sort((a, b) => {
-      switch (filters.sortBy) {
-        case 'price-low': return (a.pricePerNight || 0) - (b.pricePerNight || 0);
-        case 'price-high': return (b.pricePerNight || 0) - (a.pricePerNight || 0);
-        case 'name': return (a.hotel?.name || '').localeCompare(b.hotel?.name || '');
-        default: return 0;
-      }
-    });
-
-    return filtered;
-  }, [searchTerm, filters]);
-  
-  // Calculate pagination
-  const totalPages = Math.ceil(filteredHotels.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentHotels = filteredHotels.slice(startIndex, endIndex);
-  
   const handlePageChange = (page) => {
     setCurrentPage(page);
     window.scrollTo(0, 0);
@@ -117,7 +112,7 @@ const Hotels = () => {
 
   const handleFilterChange = (filterType, value) => {
     setFilters(prev => ({ ...prev, [filterType]: value }));
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page on filter change
   };
 
   const handleAmenityToggle = (amenity) => {
@@ -140,15 +135,15 @@ const Hotels = () => {
     });
     setCurrentPage(1);
   };
-  
-  if (loading) {
+
+  if (loading && rooms.length === 0) {
     return (
       <div className="pt-28 flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900" />
       </div>
     );
   }
-  
+
   return (
     <div className="pt-28 px-4 md:px-16 lg:px-24 xl:px-32 pb-16">
       <div className="text-center mb-12">
@@ -220,7 +215,7 @@ const Hotels = () => {
 
           {/* Clear Filters */}
           <div className="flex items-end">
-            <button 
+            <button
               onClick={clearFilters}
               className="w-full px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all"
             >
@@ -249,7 +244,7 @@ const Hotels = () => {
 
         {/* Results Counter */}
         <div className="mt-4 text-sm text-gray-600">
-          {filteredHotels.length} hotel{filteredHotels.length !== 1 ? 's' : ''} found
+          {totalHotels} hotel{totalHotels !== 1 ? 's' : ''} found
         </div>
 
         {error && (
@@ -259,10 +254,14 @@ const Hotels = () => {
         )}
       </div>
 
-      {currentHotels.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900" />
+        </div>
+      ) : rooms.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-500 text-lg">No hotels found matching your criteria.</p>
-          <button 
+          <button
             onClick={clearFilters}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
@@ -272,14 +271,14 @@ const Hotels = () => {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
-            {currentHotels.map((room, idx) => (
+            {rooms.map((room, idx) => (
               <div key={room._id} className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all">
                 <div className="relative">
-                  <img 
-                    src={room.images?.[0]} 
+                  <img
+                    src={room.images?.[0]}
                     alt={room.hotel?.name}
                     className="w-full h-60 object-cover cursor-pointer"
-                    onClick={() => {navigate(`/rooms/${room._id}`); scrollTo(0,0)}}
+                    onClick={() => { navigate(`/rooms/${room._id}`); scrollTo(0, 0) }}
                   />
                   {idx % 3 === 0 && (
                     <div className="absolute top-3 left-3 bg-white px-3 py-1 rounded-full text-xs font-medium">
@@ -287,12 +286,12 @@ const Hotels = () => {
                     </div>
                   )}
                 </div>
-                
+
                 <div className="p-5">
                   <div className="flex justify-between items-start mb-2">
-                    <h3 
+                    <h3
                       className="font-playfair text-xl text-gray-800 cursor-pointer"
-                      onClick={() => {navigate(`/rooms/${room._id}`); scrollTo(0,0)}}
+                      onClick={() => { navigate(`/rooms/${room._id}`); scrollTo(0, 0) }}
                     >
                       {room.hotel?.name}
                     </h3>
@@ -301,12 +300,12 @@ const Hotels = () => {
                       <span className="text-sm">4.8</span>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-1 text-gray-500 text-sm mb-3">
                     <img src={assets.locationIcon} alt="location" className="w-4 h-4" />
                     <span>{room.hotel?.city}</span>
                   </div>
-                  
+
                   <div className="flex flex-wrap gap-2 mb-4">
                     {(room.amenities || []).slice(0, 3).map((amenity, i) => (
                       <span key={i} className="text-xs bg-[#F5F5FF]/70 px-2 py-1 rounded-md flex items-center gap-1">
@@ -315,11 +314,11 @@ const Hotels = () => {
                       </span>
                     ))}
                   </div>
-                  
+
                   <div className="flex justify-between items-center">
                     <p className="text-gray-700"><span className="text-lg font-medium">${room.pricePerNight}</span> /night</p>
-                    <button 
-                      onClick={() => {navigate(`/rooms/${room._id}`); scrollTo(0,0)}}
+                    <button
+                      onClick={() => { navigate(`/rooms/${room._id}`); scrollTo(0, 0) }}
                       className="px-4 py-2 text-sm border border-gray-300 rounded-full hover:bg-gray-50 transition-all"
                     >
                       View Details
@@ -329,7 +328,7 @@ const Hotels = () => {
               </div>
             ))}
           </div>
-          
+
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex justify-center items-center mt-12 gap-2">
@@ -340,24 +339,23 @@ const Hotels = () => {
               >
                 Previous
               </button>
-              
+
               {[...Array(totalPages)].map((_, index) => {
                 const page = index + 1;
                 return (
                   <button
                     key={page}
                     onClick={() => handlePageChange(page)}
-                    className={`px-3 py-2 rounded-lg border ${
-                      currentPage === page
+                    className={`px-3 py-2 rounded-lg border ${currentPage === page
                         ? 'bg-blue-600 text-white border-blue-600'
                         : 'border-gray-300 text-gray-600 hover:bg-gray-50'
-                    }`}
+                      }`}
                   >
                     {page}
                   </button>
                 );
               })}
-              
+
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
@@ -367,10 +365,10 @@ const Hotels = () => {
               </button>
             </div>
           )}
-          
+
           {/* Results info */}
           <div className="text-center mt-4 text-gray-500 text-sm">
-            Showing {startIndex + 1}-{Math.min(endIndex, filteredHotels.length)} of {filteredHotels.length} hotels
+            Showing {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, totalHotels)} of {totalHotels} hotels
           </div>
         </>
       )}
