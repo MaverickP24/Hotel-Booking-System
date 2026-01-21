@@ -12,6 +12,9 @@ import Footer from './components/Footer'
 import Featured from './pages/Featured'
 import MyBookings from './pages/MyBookings'
 import BookingDetails from './pages/BookingDetails'
+import Settings from './pages/Settings'
+import AdminDashboard from './pages/AdminDashboard'
+import AdminRoute from './components/AdminRoute'
 import AuthModal from './components/AuthModal'
 import { useAuth } from './context/AuthContext'
 import OwnerRoute from './components/OwnerRoute'
@@ -67,6 +70,8 @@ function App() {
           <Route path="/featured" element={<Featured />} />
           <Route path="/my-bookings" element={<MyBookings />} />
           <Route path="/bookings/:id" element={<BookingDetails />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
         </Routes>
       </div>
 

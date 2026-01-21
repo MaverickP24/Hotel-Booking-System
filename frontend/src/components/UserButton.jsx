@@ -38,14 +38,8 @@ const UserButton = ({ children }) => {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 focus:outline-none"
       >
-        <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden">
-          {user.image ? (
-            <img src={user.image} alt={user.username} className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-sm font-medium text-gray-700">
-              {user.username?.charAt(0).toUpperCase()}
-            </span>
-          )}
+        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center overflow-hidden border border-gray-100">
+          <img src={user.image} alt={user.username} className="w-full h-full object-cover" />
         </div>
       </button>
 

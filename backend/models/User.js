@@ -42,7 +42,9 @@ const userSchema = new mongoose.Schema({
   },
   image: {
     type: String,
-    default: 'https://via.placeholder.com/150'
+    default: function () {
+      return `https://api.dicebear.com/7.x/avataaars/svg?seed=${this.username || Math.random().toString(36).substring(7)}`;
+    }
   },
   recentSearchedCities: [{
     type: String

@@ -19,9 +19,9 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const initializeAuth = async () => {
-    const storedUser = authAPI.getStoredUser();
-    if (storedUser) {
-      setUser(storedUser);
+      const storedUser = authAPI.getStoredUser();
+      if (storedUser) {
+        setUser(storedUser);
         setLoading(false);
         return;
       }
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
         }
       }
 
-    setLoading(false);
+      setLoading(false);
     };
 
     initializeAuth();
@@ -75,6 +75,12 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const updateUser = (userData) => {
+    const updatedUser = { ...user, ...userData };
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    setUser(updatedUser);
+  };
+
   const openSignIn = () => {
     setAuthMode('login');
     setShowAuthModal(true);
@@ -95,6 +101,7 @@ export const AuthProvider = ({ children }) => {
     login,
     signup,
     logout,
+    updateUser,
     openSignIn,
     openSignUp,
     showAuthModal,

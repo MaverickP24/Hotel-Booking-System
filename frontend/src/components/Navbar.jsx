@@ -13,9 +13,16 @@ const Navbar = () => {
         { name: 'About', path: '/about' },
     ];
 
-    const Booking = ()=>(
+    const Booking = () => (
         <svg className="w-4 h-4 text-gray-700" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" >
             <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 19V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v13H7a2 2 0 0 0-2 2Zm0 0a2 2 0 0 0 2 2h12M9 3v14m7 0v4" />
+        </svg>
+    )
+
+    const SettingsIcon = () => (
+        <svg className="w-4 h-4 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
     )
 
@@ -28,11 +35,11 @@ const Navbar = () => {
     const locate = useLocation();
 
     useEffect(() => {
-        if (locate.pathname !== "/"){
+        if (locate.pathname !== "/") {
             setIsScrolled(true);
             return;
         }
-        else{
+        else {
             setIsScrolled(false);
         }
 
@@ -53,38 +60,42 @@ const Navbar = () => {
             {/* Desktop Nav */}
             <div className="hidden md:flex items-center gap-4 lg:gap-8">
                 {navLinks.map((link, i) => (
-                    <Link 
-                        key={i} 
-                        to={link.path} 
+                    <Link
+                        key={i}
+                        to={link.path}
                         className={`group flex flex-col gap-0.5 ${isScrolled ? "text-gray-700" : "text-white"} ${locate.pathname === link.path ? "font-medium" : ""}`}
                     >
                         {link.name}
                         <div className={`${isScrolled ? "bg-gray-700" : "bg-white"} h-0.5 ${locate.pathname === link.path ? "w-full" : "w-0"} group-hover:w-full transition-all duration-300`} />
                     </Link>
                 ))}
-                {isOwner && <button onClick={()=>(navigate("/owner"))} className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${isScrolled ? 'text-black' : 'text-white'} transition-all`}>
-                    Dashboard
+                {isOwner && <button onClick={() => (navigate("/owner"))} className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${isScrolled ? 'text-black' : 'text-white'} transition-all`}>
+                    Owner
+                </button>}
+                {user?.role === 'admin' && <button onClick={() => (navigate("/admin"))} className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${isScrolled ? 'text-black' : 'text-white'} transition-all`}>
+                    Admin
                 </button>}
             </div>
 
             {/* Desktop Right */}
             <div className="hidden md:flex items-center gap-4">
-                {user ? 
-                (<UserButton>
-                    <UserButton.MenuItems>
-                        <UserButton.Action label='My Booking' labelIcon={<Booking />} onClick={()=>(navigate("/my-bookings"))} />
-                    </UserButton.MenuItems>
-                </UserButton>)
-                :
-                (<button onClick={openSignIn} className="bg-black text-white px-8 py-2.5 rounded-full ml-4 transition-all duration-500">
-                    Login
-                </button>)
+                {user ?
+                    (<UserButton>
+                        <UserButton.MenuItems>
+                            <UserButton.Action label='My Booking' labelIcon={<Booking />} onClick={() => (navigate("/my-bookings"))} />
+                            <UserButton.Action label='Settings' labelIcon={<SettingsIcon />} onClick={() => (navigate("/settings"))} />
+                        </UserButton.MenuItems>
+                    </UserButton>)
+                    :
+                    (<button onClick={openSignIn} className="bg-black text-white px-8 py-2.5 rounded-full ml-4 transition-all duration-500">
+                        Login
+                    </button>)
                 }
             </div>
 
             {/* Mobile Menu Button */}
             <div className="flex items-center gap-3 md:hidden">
-                <img onClick={()=> setIsMenuOpen(!isMenuOpen)} src={assets.menuIcon} alt="menuicon" className={`${isScrolled && "invert"} h-4`} />
+                <img onClick={() => setIsMenuOpen(!isMenuOpen)} src={assets.menuIcon} alt="menuicon" className={`${isScrolled && "invert"} h-4`} />
             </div>
 
             {/* Mobile Menu */}
@@ -94,9 +105,9 @@ const Navbar = () => {
                 </button>
 
                 {navLinks.map((link, i) => (
-                    <Link 
-                        key={i} 
-                        to={link.path} 
+                    <Link
+                        key={i}
+                        to={link.path}
                         onClick={() => setIsMenuOpen(false)}
                         className={locate.pathname === link.path ? "font-medium" : ""}
                     >
@@ -104,20 +115,25 @@ const Navbar = () => {
                     </Link>
                 ))}
 
-                {isOwner && <button onClick={()=>{navigate("/owner"); setIsMenuOpen(false)}} className="border px-4 py-1 text-sm font-light rounded-full cursor-pointer transition-all">
-                    Dashboard
+                {isOwner && <button onClick={() => { navigate("/owner"); setIsMenuOpen(false) }} className="border px-4 py-1 text-sm font-light rounded-full cursor-pointer transition-all">
+                    Owner Dashboard
                 </button>}
 
-                {user ? 
-                (<UserButton>
-                    <UserButton.MenuItems>
-                        <UserButton.Action label='My Booking' labelIcon={<Booking />} onClick={()=>(navigate("/my-bookings"))} />
-                    </UserButton.MenuItems>
-                </UserButton>)
-                :
-                (<button onClick={openSignIn} className="bg-black text-white px-8 py-2.5 rounded-full transition-all duration-500">
-                    Login
-                </button>)
+                {user?.role === 'admin' && <button onClick={() => { navigate("/admin"); setIsMenuOpen(false) }} className="border px-4 py-1 text-sm font-light rounded-full cursor-pointer transition-all">
+                    Admin Dashboard
+                </button>}
+
+                {user ?
+                    (<UserButton>
+                        <UserButton.MenuItems>
+                            <UserButton.Action label='My Booking' labelIcon={<Booking />} onClick={() => (navigate("/my-bookings"))} />
+                            <UserButton.Action label='Settings' labelIcon={<SettingsIcon />} onClick={() => (navigate("/settings"))} />
+                        </UserButton.MenuItems>
+                    </UserButton>)
+                    :
+                    (<button onClick={openSignIn} className="bg-black text-white px-8 py-2.5 rounded-full transition-all duration-500">
+                        Login
+                    </button>)
                 }
             </div>
         </nav>

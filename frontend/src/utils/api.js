@@ -289,6 +289,197 @@ export const paymentAPI = {
   }
 };
 
+// Admin API
+export const adminAPI = {
+  // Users
+  getAllUsers: async (filters = {}) => {
+    const queryString = new URLSearchParams(filters).toString();
+    const url = queryString ? `${API_URL}/admin/users?${queryString}` : `${API_URL}/admin/users`;
+    const response = await fetch(url, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch users');
+    return data;
+  },
+
+  getUserById: async (id) => {
+    const response = await fetch(`${API_URL}/admin/users/${id}`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch user');
+    return data;
+  },
+
+  createUser: async (userData) => {
+    const response = await fetch(`${API_URL}/admin/users`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(userData)
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to create user');
+    return data;
+  },
+
+  updateUser: async (id, userData) => {
+    const response = await fetch(`${API_URL}/admin/users/${id}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(userData)
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to update user');
+    return data;
+  },
+
+  deleteUser: async (id) => {
+    const response = await fetch(`${API_URL}/admin/users/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to delete user');
+    return data;
+  },
+
+  // Hotel Owners
+  getAllHotelOwners: async () => {
+    const response = await fetch(`${API_URL}/admin/hotel-owners`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch hotel owners');
+    return data;
+  },
+
+  // Hotels & Rooms
+  getAllHotels: async () => {
+    const response = await fetch(`${API_URL}/admin/hotels`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch hotels');
+    return data;
+  },
+
+  updateHotel: async (id, hotelData) => {
+    const response = await fetch(`${API_URL}/admin/hotels/${id}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(hotelData)
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to update hotel');
+    return data;
+  },
+
+  deleteHotel: async (id) => {
+    const response = await fetch(`${API_URL}/admin/hotels/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to delete hotel');
+    return data;
+  },
+
+  getAllRooms: async () => {
+    const response = await fetch(`${API_URL}/admin/rooms`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch rooms');
+    return data;
+  },
+
+  updateRoom: async (id, roomData) => {
+    const response = await fetch(`${API_URL}/admin/rooms/${id}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(roomData)
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to update room');
+    return data;
+  },
+
+  deleteRoom: async (id) => {
+    const response = await fetch(`${API_URL}/admin/rooms/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to delete room');
+    return data;
+  },
+
+  // Bookings
+  getAllBookings: async (filters = {}) => {
+    const queryString = new URLSearchParams(filters).toString();
+    const url = queryString ? `${API_URL}/admin/bookings?${queryString}` : `${API_URL}/admin/bookings`;
+    const response = await fetch(url, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch bookings');
+    return data;
+  },
+
+  updateBookingStatus: async (id, status) => {
+    const response = await fetch(`${API_URL}/admin/bookings/${id}/status`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ status })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to update booking status');
+    return data;
+  },
+
+  deleteBooking: async (id) => {
+    const response = await fetch(`${API_URL}/admin/bookings/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to delete booking');
+    return data;
+  },
+
+  // Analytics
+  getAnalytics: async () => {
+    const response = await fetch(`${API_URL}/admin/analytics`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch analytics');
+    return data;
+  },
+
+  // Superusers
+  getSuperusers: async () => {
+    const response = await fetch(`${API_URL}/admin/superusers`, {
+      headers: getAuthHeaders()
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to fetch superusers');
+    return data;
+  },
+
+  createSuperuser: async (userData) => {
+    const response = await fetch(`${API_URL}/admin/superusers`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(userData)
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to create superuser');
+    return data;
+  }
+};
+
 // Users API
 export const usersAPI = {
   getProfile: async () => {
@@ -308,6 +499,17 @@ export const usersAPI = {
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Failed to update profile');
+    return data;
+  },
+
+  updatePassword: async (passwordData) => {
+    const response = await fetch(`${API_URL}/users/password`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(passwordData)
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to update password');
     return data;
   }
 };
