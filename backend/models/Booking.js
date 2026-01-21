@@ -41,12 +41,24 @@ const bookingSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['Stripe', 'Pay At Hotel', 'PayPal'],
+    enum: ['Razorpay', 'Stripe', 'Pay At Hotel', 'PayPal'],
     default: 'Pay At Hotel'
   },
   isPaid: {
     type: Boolean,
     default: false
+  },
+  razorpayOrderId: {
+    type: String,
+    default: null
+  },
+  razorpayPaymentId: {
+    type: String,
+    default: null
+  },
+  razorpaySignature: {
+    type: String,
+    default: null
   },
   createdAt: {
     type: Date,

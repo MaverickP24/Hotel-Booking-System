@@ -63,7 +63,7 @@ const BookingDetails = () => {
       1,
       Math.round(
         (new Date(booking.checkOutDate).getTime() - new Date(booking.checkInDate).getTime()) /
-          (1000 * 60 * 60 * 24)
+        (1000 * 60 * 60 * 24)
       )
     ) || 1
 
@@ -185,16 +185,16 @@ const BookingDetails = () => {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">
-                    Room ({nights} night{nights !== 1 ? 's' : ''} × ${booking.room?.pricePerNight})
+                    Room ({nights} night{nights !== 1 ? 's' : ''} × ₹{booking.room?.pricePerNight})
                   </span>
                   <span className="text-gray-800">
-                    ${booking.totalPrice?.toFixed ? booking.totalPrice.toFixed(2) : booking.totalPrice}
+                    ₹{booking.totalPrice?.toFixed ? booking.totalPrice.toFixed(2) : booking.totalPrice}
                   </span>
                 </div>
                 <div className="flex justify-between font-semibold text-base pt-2 border-t border-dashed border-gray-200 mt-2">
                   <span>Total</span>
                   <span>
-                    ${booking.totalPrice?.toFixed ? booking.totalPrice.toFixed(2) : booking.totalPrice}
+                    ₹{booking.totalPrice?.toFixed ? booking.totalPrice.toFixed(2) : booking.totalPrice}
                   </span>
                 </div>
               </div>

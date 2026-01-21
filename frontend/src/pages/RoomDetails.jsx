@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { assets, facilityIcons } from '../assets/assets'
-import { roomsAPI, bookingsAPI } from '../utils/api'
+import { roomsAPI, bookingsAPI, paymentAPI } from '../utils/api'
 import { useAuth } from '../context/AuthContext'
+import PaymentModal from '../components/PaymentModal'
 
 const RoomDetails = () => {
   const { id } = useParams()
@@ -16,6 +17,7 @@ const RoomDetails = () => {
   const [checkOutDate, setCheckOutDate] = useState('')
   const [guests, setGuests] = useState(1)
   const [bookingLoading, setBookingLoading] = useState(false)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
 
   useEffect(() => {
     const fetchRoom = async () => {
@@ -34,7 +36,7 @@ const RoomDetails = () => {
     fetchRoom()
   }, [id])
 
-  const handleBookNow = async () => {
+  const handleBookNow = () => {
     if (!isSignedIn) {
       openSignIn()
       return
@@ -52,28 +54,102 @@ const RoomDetails = () => {
       return
     }
 
+    // Show payment modal
+    setShowPaymentModal(true)
+  }
+
+  const handlePaymentSelect = async (paymentMethod) => {
     try {
       setBookingLoading(true)
+      const checkIn = new Date(checkInDate)
+      const checkOut = new Date(checkOutDate)
       const days = Math.max(
         1,
         Math.round((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))
       )
       const totalPrice = (room.pricePerNight || 0) * days
 
-      await bookingsAPI.create({
-        room: room._id,
-        hotel: room.hotel?._id,
-        checkInDate,
-        checkOutDate,
-        totalPrice,
-        guests,
-        paymentMethod: 'Pay At Hotel'
-      })
+      if (paymentMethod === 'Razorpay') {
+        // Create Razorpay order
+        const orderResponse = await paymentAPI.createOrder({
+          amount: totalPrice,
+          currency: 'INR',
+          receipt: `booking_${Date.now()}`
+        })
 
-      navigate('/my-bookings')
+        const { orderId, amount, currency, keyId } = orderResponse.data
+
+        // Initialize Razorpay checkout
+        const options = {
+          key: keyId,
+          amount: amount,
+          currency: currency,
+          name: 'ApnaStays',
+          description: `Booking for ${room.hotel?.name}`,
+          order_id: orderId,
+          handler: async function (response) {
+            try {
+              // Verify payment
+              await paymentAPI.verifyPayment({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              })
+
+              // Create booking with Razorpay details
+              await bookingsAPI.create({
+                room: room._id,
+                hotel: room.hotel?._id,
+                checkInDate,
+                checkOutDate,
+                totalPrice,
+                guests,
+                paymentMethod: 'Razorpay',
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature
+              })
+
+              alert('Payment successful! Booking confirmed.')
+              navigate('/my-bookings')
+            } catch (err) {
+              alert(err.message || 'Payment verification failed')
+              setBookingLoading(false)
+            }
+          },
+          prefill: {
+            name: '',
+            email: '',
+            contact: ''
+          },
+          theme: {
+            color: '#2563eb'
+          },
+          modal: {
+            ondismiss: function () {
+              setBookingLoading(false)
+            }
+          }
+        }
+
+        const razorpay = new window.Razorpay(options)
+        razorpay.open()
+      } else {
+        // Pay At Hotel
+        await bookingsAPI.create({
+          room: room._id,
+          hotel: room.hotel?._id,
+          checkInDate,
+          checkOutDate,
+          totalPrice,
+          guests,
+          paymentMethod: 'Pay At Hotel'
+        })
+
+        navigate('/my-bookings')
+      }
     } catch (err) {
       alert(err.message || 'Failed to create booking')
-    } finally {
       setBookingLoading(false)
     }
   }
@@ -101,8 +177,8 @@ const RoomDetails = () => {
     <div className="pt-28 px-4 md:px-16 lg:px-24 xl:px-32 pb-16">
       {/* Header */}
       <div className="mb-8">
-        <button 
-          onClick={() => navigate('/rooms')} 
+        <button
+          onClick={() => navigate('/rooms')}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-4"
         >
           ← Back to Rooms
@@ -117,17 +193,17 @@ const RoomDetails = () => {
       {/* Image Gallery */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="lg:col-span-2 lg:row-span-2">
-          <img 
-            src={room.images?.[0]} 
-            alt="Main room" 
+          <img
+            src={room.images?.[0]}
+            alt="Main room"
             className="w-full h-full object-cover rounded-xl"
           />
         </div>
         {(room.images || []).slice(1, 4).map((img, idx) => (
-          <img 
+          <img
             key={idx}
-            src={img} 
-            alt={`Room view ${idx + 2}`} 
+            src={img}
+            alt={`Room view ${idx + 2}`}
             className="w-full h-48 object-cover rounded-xl"
           />
         ))}
@@ -180,10 +256,10 @@ const RoomDetails = () => {
         <div className="lg:col-span-1">
           <div className="bg-white border border-gray-200 rounded-xl p-6 sticky top-32">
             <div className="text-center mb-6">
-              <p className="text-3xl font-bold text-gray-800">${room.pricePerNight}</p>
+              <p className="text-3xl font-bold text-gray-800">₹{room.pricePerNight}</p>
               <p className="text-gray-500">per night</p>
             </div>
-            
+
             <div className="space-y-4 mb-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Check-in</label>
@@ -219,7 +295,7 @@ const RoomDetails = () => {
                 </select>
               </div>
             </div>
-            
+
             <button
               disabled={bookingLoading}
               onClick={handleBookNow}
@@ -230,6 +306,25 @@ const RoomDetails = () => {
           </div>
         </div>
       </div>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onSelectPayment={handlePaymentSelect}
+        totalAmount={
+          checkInDate && checkOutDate
+            ? (room.pricePerNight || 0) *
+            Math.max(
+              1,
+              Math.round(
+                (new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) /
+                (1000 * 60 * 60 * 24)
+              )
+            )
+            : 0
+        }
+      />
     </div>
   )
 }

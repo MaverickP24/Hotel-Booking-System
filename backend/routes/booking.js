@@ -16,7 +16,7 @@ router.get('/', protect, async (req, res) => {
       .populate('hotel')
       .populate('user', 'username email')
       .sort({ createdAt: -1 });
-    
+
     res.status(200).json({
       success: true,
       count: bookings.length,
@@ -40,14 +40,14 @@ router.get('/:id', protect, async (req, res) => {
       .populate('room')
       .populate('hotel')
       .populate('user', 'username email');
-    
+
     if (!booking) {
       return res.status(404).json({
         success: false,
         message: 'Booking not found'
       });
     }
-    
+
     // Check if user owns the booking
     if (booking.user._id.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
       return res.status(403).json({
@@ -55,7 +55,7 @@ router.get('/:id', protect, async (req, res) => {
         message: 'Not authorized to view this booking'
       });
     }
-    
+
     res.status(200).json({
       success: true,
       data: booking
@@ -74,8 +74,19 @@ router.get('/:id', protect, async (req, res) => {
 // @access  Private
 router.post('/', protect, async (req, res) => {
   try {
-    const { room, hotel, checkInDate, checkOutDate, totalPrice, guests, paymentMethod } = req.body;
-    
+    const {
+      room,
+      hotel,
+      checkInDate,
+      checkOutDate,
+      totalPrice,
+      guests,
+      paymentMethod,
+      razorpayOrderId,
+      razorpayPaymentId,
+      razorpaySignature
+    } = req.body;
+
     // Check if room exists and is available
     const roomDoc = await Room.findById(room);
     if (!roomDoc) {
@@ -84,35 +95,36 @@ router.post('/', protect, async (req, res) => {
         message: 'Room not found'
       });
     }
-    
+
     if (!roomDoc.isAvailable) {
       return res.status(400).json({
         success: false,
         message: 'Room is not available'
       });
     }
-    
+
     // Validate dates
     const checkIn = new Date(checkInDate);
     const checkOut = new Date(checkOutDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     if (checkIn < today) {
       return res.status(400).json({
         success: false,
         message: 'Check-in date cannot be in the past'
       });
     }
-    
+
     if (checkOut <= checkIn) {
       return res.status(400).json({
         success: false,
         message: 'Check-out date must be after check-in date'
       });
     }
-    
-    const booking = await Booking.create({
+
+    // Prepare booking data
+    const bookingData = {
       user: req.user._id,
       room,
       hotel,
@@ -121,14 +133,24 @@ router.post('/', protect, async (req, res) => {
       totalPrice,
       guests,
       paymentMethod,
-      isPaid: paymentMethod === 'Stripe' || paymentMethod === 'PayPal'
-    });
-    
+      isPaid: paymentMethod === 'Razorpay' || paymentMethod === 'Stripe' || paymentMethod === 'PayPal'
+    };
+
+    // Add Razorpay details if payment method is Razorpay
+    if (paymentMethod === 'Razorpay') {
+      bookingData.razorpayOrderId = razorpayOrderId;
+      bookingData.razorpayPaymentId = razorpayPaymentId;
+      bookingData.razorpaySignature = razorpaySignature;
+      bookingData.status = 'confirmed'; // Auto-confirm for paid bookings
+    }
+
+    const booking = await Booking.create(bookingData);
+
     const populatedBooking = await Booking.findById(booking._id)
       .populate('room')
       .populate('hotel')
       .populate('user', 'username email');
-    
+
     res.status(201).json({
       success: true,
       message: 'Booking created successfully',
@@ -149,14 +171,14 @@ router.post('/', protect, async (req, res) => {
 router.put('/:id', protect, async (req, res) => {
   try {
     let booking = await Booking.findById(req.params.id);
-    
+
     if (!booking) {
       return res.status(404).json({
         success: false,
         message: 'Booking not found'
       });
     }
-    
+
     // Check if user owns the booking
     if (booking.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
       return res.status(403).json({
@@ -164,12 +186,12 @@ router.put('/:id', protect, async (req, res) => {
         message: 'Not authorized to update this booking'
       });
     }
-    
+
     booking = await Booking.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true
     }).populate('room').populate('hotel').populate('user', 'username email');
-    
+
     res.status(200).json({
       success: true,
       message: 'Booking updated successfully',
@@ -190,14 +212,14 @@ router.put('/:id', protect, async (req, res) => {
 router.delete('/:id', protect, async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
-    
+
     if (!booking) {
       return res.status(404).json({
         success: false,
         message: 'Booking not found'
       });
     }
-    
+
     // Check if user owns the booking
     if (booking.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
       return res.status(403).json({
@@ -205,11 +227,11 @@ router.delete('/:id', protect, async (req, res) => {
         message: 'Not authorized to cancel this booking'
       });
     }
-    
+
     // Update status to cancelled instead of deleting
     booking.status = 'cancelled';
     await booking.save();
-    
+
     res.status(200).json({
       success: true,
       message: 'Booking cancelled successfully',
@@ -250,7 +272,7 @@ router.get('/hotel/:hotelId', protect, async (req, res) => {
       .populate('hotel')
       .populate('user', 'username email')
       .sort({ createdAt: -1 });
-    
+
     res.status(200).json({
       success: true,
       count: bookings.length,

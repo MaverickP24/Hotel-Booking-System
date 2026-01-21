@@ -99,11 +99,10 @@ const MyBookings = () => {
           <button
             key={status}
             onClick={() => setFilter(status)}
-            className={`pb-3 px-2 capitalize transition-all ${
-              filter === status
+            className={`pb-3 px-2 capitalize transition-all ${filter === status
                 ? 'border-b-2 border-black font-medium'
                 : 'text-gray-500 hover:text-gray-700'
-            }`}
+              }`}
           >
             {status}
             {status === 'all' && ` (${bookings.length})`}
@@ -129,8 +128,8 @@ const MyBookings = () => {
           </div>
           <h3 className="text-xl font-medium text-gray-900 mb-2">No bookings found</h3>
           <p className="text-gray-500 mb-6">
-            {filter === 'all' 
-              ? "You haven't made any bookings yet." 
+            {filter === 'all'
+              ? "You haven't made any bookings yet."
               : `You don't have any ${filter} bookings.`}
           </p>
           <button
@@ -191,7 +190,7 @@ const MyBookings = () => {
                     <div className="flex justify-between items-center pt-4 border-t border-gray-200">
                       <div>
                         <p className="text-sm text-gray-500">Total Price</p>
-                        <p className="text-2xl font-bold">${booking.totalPrice}</p>
+                        <p className="text-2xl font-bold">₹{booking.totalPrice}</p>
                       </div>
                       <div className="flex gap-3">
                         {booking.status === 'confirmed' && (

@@ -192,10 +192,10 @@ const Hotels = () => {
               className="w-full p-3 border border-gray-300 rounded-lg"
             >
               <option value="">All Prices</option>
-              <option value="under-200">Under $200</option>
-              <option value="200-400">$200 - $400</option>
-              <option value="400-600">$400 - $600</option>
-              <option value="over-600">Over $600</option>
+              <option value="under-200">Under ₹200</option>
+              <option value="200-400">₹200 - ₹400</option>
+              <option value="400-600">₹400 - ₹600</option>
+              <option value="over-600">Over ₹600</option>
             </select>
           </div>
 
@@ -316,7 +316,7 @@ const Hotels = () => {
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <p className="text-gray-700"><span className="text-lg font-medium">${room.pricePerNight}</span> /night</p>
+                    <p className="text-gray-700"><span className="text-lg font-medium">₹{room.pricePerNight}</span> /night</p>
                     <button
                       onClick={() => { navigate(`/rooms/${room._id}`); scrollTo(0, 0) }}
                       className="px-4 py-2 text-sm border border-gray-300 rounded-full hover:bg-gray-50 transition-all"
@@ -347,8 +347,8 @@ const Hotels = () => {
                     key={page}
                     onClick={() => handlePageChange(page)}
                     className={`px-3 py-2 rounded-lg border ${currentPage === page
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'border-gray-300 text-gray-600 hover:bg-gray-50'
                       }`}
                   >
                     {page}
