@@ -31,34 +31,10 @@ function App() {
       // Store token in localStorage
       localStorage.setItem('token', token);
 
-      // Fetch full user details using the token
-      const apiURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      fetch(`${apiURL}/auth/me`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            // Update localStorage with user data
-            const userData = {
-              ...data.data,
-              token
-            };
-            localStorage.setItem('user', JSON.stringify(userData));
-
-            // Reload page to update auth context
-            window.location.href = '/';
-          }
-        })
-        .catch(err => console.error('Error fetching user:', err));
-
-      // Clean URL parameters
-      window.history.replaceState({}, document.title, window.location.pathname);
-
-      // Close auth modal if open
-      closeAuthModal();
+      // Clean URL parameters and reload page
+      // The AuthContext useEffect will fetch user details on mount
+      window.history.replaceState({}, document.title, '/');
+      window.location.reload();
     } else if (authStatus === 'failed') {
       const error = params.get('error') || 'Google authentication failed';
       alert(error);
@@ -66,11 +42,11 @@ function App() {
       // Clean URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, [closeAuthModal]);
+  }, []);
 
   return (
     <>
-      {!isOwner && <Navbar />}
+      <Navbar />
 
       <div className='min-h-[80vh]'>
         <Routes>
