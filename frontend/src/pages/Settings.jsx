@@ -42,7 +42,19 @@ const Settings = () => {
         setError('');
         setSuccess('');
         try {
-            const response = await usersAPI.updateProfile(profileData);
+            const formData = new FormData();
+            formData.append('username', profileData.username);
+            formData.append('email', profileData.email);
+
+            // If image is a File object (from file input), append as file
+            // Otherwise append as string (URL)
+            if (profileData.image instanceof File) {
+                formData.append('image', profileData.image);
+            } else {
+                formData.append('image', profileData.image);
+            }
+
+            const response = await usersAPI.updateProfile(formData);
             updateUser(response.data);
             setSuccess('Profile updated successfully!');
         } catch (err) {
@@ -153,15 +165,35 @@ const Settings = () => {
                                             </button>
                                         ))}
                                     </div>
-                                    <div className="mt-4">
-                                        <label className="block text-xs font-medium text-gray-500 mb-1">Or paste image URL</label>
-                                        <input
-                                            type="text"
-                                            placeholder="https://example.com/image.jpg"
-                                            value={profileData.image}
-                                            onChange={(e) => setProfileData({ ...profileData, image: e.target.value })}
-                                            className="w-full px-4 py-2 text-sm rounded-lg border border-gray-200"
-                                        />
+                                    <div className="mt-6 flex flex-col gap-2">
+                                        <label className="block text-sm font-semibold text-gray-700">Custom Profile Photo</label>
+                                        <div className="flex items-center gap-4">
+                                            <label className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all group">
+                                                <span className="text-xl group-hover:scale-110 transition-transform">📸</span>
+                                                <span className="text-sm font-bold text-gray-500 group-hover:text-blue-600">
+                                                    {profileData.image instanceof File ? profileData.image.name : 'Choose a photo...'}
+                                                </span>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                    onChange={(e) => {
+                                                        const file = e.target.files[0];
+                                                        if (file) setProfileData({ ...profileData, image: file });
+                                                    }}
+                                                />
+                                            </label>
+                                            {profileData.image instanceof File && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setProfileData({ ...profileData, image: user.image })}
+                                                    className="p-3 text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                                >
+                                                    ✕
+                                                </button>
+                                            )}
+                                        </div>
+                                        <p className="text-[10px] text-gray-400 mt-1 uppercase font-bold tracking-widest">Supports JPG, PNG, WEBP (Max 5MB)</p>
                                     </div>
                                 </div>
                                 <button

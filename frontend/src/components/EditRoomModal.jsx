@@ -9,7 +9,8 @@ const EditRoomModal = ({ room, onClose, onSubmit, isSubmitting }) => {
     roomType: room.roomType,
     pricePerNight: room.pricePerNight,
     amenities: room.amenities || [],
-    imageUrls: (room.images || []).join('\n'),
+    existingImages: room.images || [],
+    imageFiles: [],
     maxGuests: room.maxGuests || 2,
     description: room.description || '',
     isAvailable: room.isAvailable
@@ -20,38 +21,57 @@ const EditRoomModal = ({ room, onClose, onSubmit, isSubmitting }) => {
       roomType: room.roomType,
       pricePerNight: room.pricePerNight,
       amenities: room.amenities || [],
-      imageUrls: (room.images || []).join('\n'),
+      existingImages: room.images || [],
+      imageFiles: [],
       maxGuests: room.maxGuests || 2,
       description: room.description || '',
       isAvailable: room.isAvailable
     })
   }, [room])
 
-  const handleAmenityToggle = (amenity) => {
-    setFormData((prev) => ({
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setFormData(prev => ({ ...prev, imageFiles: [...prev.imageFiles, ...files] }));
+  }
+
+  const removeFile = (index) => {
+    setFormData(prev => ({
       ...prev,
-      amenities: prev.amenities.includes(amenity)
-        ? prev.amenities.filter((a) => a !== amenity)
-        : [...prev.amenities, amenity]
-    }))
+      imageFiles: prev.imageFiles.filter((_, i) => i !== index)
+    }));
+  }
+
+  const removeExistingImage = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      existingImages: prev.existingImages.filter((_, i) => i !== index)
+    }));
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    const images = formData.imageUrls
-      .split('\n')
-      .map((url) => url.trim())
-      .filter(Boolean)
+    const data = new FormData();
+    data.append('roomType', formData.roomType);
+    data.append('pricePerNight', Number(formData.pricePerNight));
+    data.append('maxGuests', Number(formData.maxGuests));
+    data.append('description', formData.description);
+    data.append('isAvailable', formData.isAvailable);
 
-    onSubmit({
-      roomType: formData.roomType,
-      pricePerNight: Number(formData.pricePerNight),
-      amenities: formData.amenities,
-      images,
-      maxGuests: Number(formData.maxGuests),
-      description: formData.description,
-      isAvailable: formData.isAvailable
-    })
+    formData.amenities.forEach(amenity => {
+      data.append('amenities', amenity);
+    });
+
+    // Send existing images back to backend
+    formData.existingImages.forEach(img => {
+      data.append('images', img);
+    });
+
+    // Send new image files
+    formData.imageFiles.forEach(file => {
+      data.append('images', file);
+    });
+
+    onSubmit(data)
   }
 
   return (
@@ -139,45 +159,95 @@ const EditRoomModal = ({ room, onClose, onSubmit, isSubmitting }) => {
             </div>
           </div>
 
-  <div>
-    <label className="block text-sm font-medium text-gray-700 mb-1">Images (one URL per line)</label>
-    <textarea
-      rows={3}
-      value={formData.imageUrls}
-      onChange={(e) => setFormData((prev) => ({ ...prev, imageUrls: e.target.value }))}
-      className="w-full p-3 border border-gray-300 rounded-lg"
-      placeholder="https://example.com/image-1.jpg"
-    />
-  </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Room Images (Max 5)</label>
+            <div className="space-y-4">
+              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-all group">
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <span className="text-3xl mb-2 group-hover:scale-110 transition-transform">📸</span>
+                  <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Add more photos</p>
+                </div>
+                <input
+                  type="file"
+                  className="hidden"
+                  multiple
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  disabled={(formData.existingImages.length + formData.imageFiles.length) >= 5}
+                />
+              </label>
 
-  <div>
-    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-    <textarea
-      rows={3}
-      value={formData.description}
-      onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-      className="w-full p-3 border border-gray-300 rounded-lg"
-    />
-  </div>
+              {(formData.existingImages.length > 0 || formData.imageFiles.length > 0) && (
+                <div className="grid grid-cols-5 gap-3">
+                  {/* Existing Images */}
+                  {formData.existingImages.map((img, idx) => (
+                    <div key={`existing-${idx}`} className="relative aspect-square rounded-lg overflow-hidden border border-gray-100 group">
+                      <img
+                        src={img}
+                        alt="Existing"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeExistingImage(idx)}
+                        className="absolute top-1 right-1 bg-white/90 text-red-500 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        ✕
+                      </button>
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/40 text-[8px] text-white py-0.5 text-center font-bold">SAVED</div>
+                    </div>
+                  ))}
+                  {/* New Image Files */}
+                  {formData.imageFiles.map((file, idx) => (
+                    <div key={`new-${idx}`} className="relative aspect-square rounded-lg overflow-hidden border border-indigo-200 group">
+                      <img
+                        src={URL.createObjectURL(file)}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeFile(idx)}
+                        className="absolute top-1 right-1 bg-white/90 text-red-500 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        ✕
+                      </button>
+                      <div className="absolute bottom-0 left-0 right-0 bg-indigo-600/80 text-[8px] text-white py-0.5 text-center font-bold">NEW</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
 
-  <div className="flex gap-3 pt-4">
-    <button
-      type="button"
-      onClick={onClose}
-      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-      disabled={isSubmitting}
-    >
-      Cancel
-    </button>
-    <button
-      type="submit"
-      disabled={isSubmitting}
-      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-60"
-    >
-      {isSubmitting ? 'Saving...' : 'Update Room'}
-    </button>
-  </div>
-</form>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea
+              rows={3}
+              value={formData.description}
+              onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+              className="w-full p-3 border border-gray-300 rounded-lg"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-60"
+            >
+              {isSubmitting ? 'Saving...' : 'Update Room'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   )

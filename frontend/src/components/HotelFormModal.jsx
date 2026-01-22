@@ -6,11 +6,23 @@ const initialState = {
   address: '',
   contact: '',
   description: '',
-  imageUrl: ''
+  imageFiles: []
 }
 
 const HotelFormModal = ({ title = 'Add Hotel', onClose, onSubmit, isSubmitting }) => {
   const [formData, setFormData] = useState(initialState)
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setFormData(prev => ({ ...prev, imageFiles: [...prev.imageFiles, ...files] }));
+  }
+
+  const removeFile = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      imageFiles: prev.imageFiles.filter((_, i) => i !== index)
+    }));
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -19,16 +31,18 @@ const HotelFormModal = ({ title = 'Add Hotel', onClose, onSubmit, isSubmitting }
       return
     }
 
-    const payload = {
-      name: formData.name,
-      city: formData.city,
-      address: formData.address,
-      contact: formData.contact,
-      description: formData.description,
-      images: formData.imageUrl ? [formData.imageUrl] : []
-    }
+    const data = new FormData();
+    data.append('name', formData.name);
+    data.append('city', formData.city);
+    data.append('address', formData.address);
+    data.append('contact', formData.contact);
+    data.append('description', formData.description);
 
-    onSubmit(payload)
+    formData.imageFiles.forEach(file => {
+      data.append('images', file);
+    });
+
+    onSubmit(data)
   }
 
   return (
@@ -88,14 +102,44 @@ const HotelFormModal = ({ title = 'Add Hotel', onClose, onSubmit, isSubmitting }
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Hero Image URL</label>
-            <input
-              type="url"
-              value={formData.imageUrl}
-              onChange={(e) => setFormData((prev) => ({ ...prev, imageUrl: e.target.value }))}
-              className="w-full p-3 border border-gray-300 rounded-lg"
-              placeholder="https://example.com/hotel.jpg"
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-2">Property Images (Max 5)</label>
+            <div className="space-y-4">
+              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-all group">
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <span className="text-3xl mb-2 group-hover:scale-110 transition-transform">📸</span>
+                  <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Click to upload property photos</p>
+                </div>
+                <input
+                  type="file"
+                  className="hidden"
+                  multiple
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  disabled={formData.imageFiles.length >= 5}
+                />
+              </label>
+
+              {formData.imageFiles.length > 0 && (
+                <div className="grid grid-cols-5 gap-3">
+                  {formData.imageFiles.map((file, idx) => (
+                    <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-gray-100 group">
+                      <img
+                        src={URL.createObjectURL(file)}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeFile(idx)}
+                        className="absolute top-1 right-1 bg-white/90 text-red-500 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div>

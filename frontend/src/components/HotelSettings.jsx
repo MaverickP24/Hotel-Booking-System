@@ -7,7 +7,8 @@ const HotelSettings = ({ hotel, onUpdate, onDelete, isSaving }) => {
     address: '',
     contact: '',
     description: '',
-    imageUrl: ''
+    existingImages: [],
+    imageFiles: []
   })
 
   useEffect(() => {
@@ -18,7 +19,8 @@ const HotelSettings = ({ hotel, onUpdate, onDelete, isSaving }) => {
         address: hotel.address || '',
         contact: hotel.contact || '',
         description: hotel.description || '',
-        imageUrl: hotel.images?.[0] || ''
+        existingImages: hotel.images || [],
+        imageFiles: []
       })
     }
   }, [hotel])
@@ -32,17 +34,45 @@ const HotelSettings = ({ hotel, onUpdate, onDelete, isSaving }) => {
     )
   }
 
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setFormData(prev => ({ ...prev, imageFiles: [...prev.imageFiles, ...files] }));
+  }
+
+  const removeFile = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      imageFiles: prev.imageFiles.filter((_, i) => i !== index)
+    }));
+  }
+
+  const removeExistingImage = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      existingImages: prev.existingImages.filter((_, i) => i !== index)
+    }));
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault()
-    const payload = {
-      name: formData.name,
-      city: formData.city,
-      address: formData.address,
-      contact: formData.contact,
-      description: formData.description,
-      images: formData.imageUrl ? [formData.imageUrl] : hotel.images
-    }
-    onUpdate(hotel._id, payload)
+    const data = new FormData();
+    data.append('name', formData.name);
+    data.append('city', formData.city);
+    data.append('address', formData.address);
+    data.append('contact', formData.contact);
+    data.append('description', formData.description);
+
+    // Existing images
+    formData.existingImages.forEach(img => {
+      data.append('images', img);
+    });
+
+    // New image files
+    formData.imageFiles.forEach(file => {
+      data.append('images', file);
+    });
+
+    onUpdate(hotel._id, data)
   }
 
   return (
@@ -108,16 +138,66 @@ const HotelSettings = ({ hotel, onUpdate, onDelete, isSaving }) => {
               required
             />
           </div>
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Hero Image URL</label>
-            <input
-              type="url"
-              value={formData.imageUrl}
-              onChange={(e) => setFormData((prev) => ({ ...prev, imageUrl: e.target.value }))}
-              className="w-full p-3 border border-gray-300 rounded-lg"
-              placeholder="https://example.com/hotel.jpg"
-            />
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Property Images (Max 5)</label>
+          <div className="space-y-4">
+            <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-2xl cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-all group">
+              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                <span className="text-4xl mb-2 group-hover:scale-110 transition-transform">📸</span>
+                <p className="text-sm text-gray-400 font-bold uppercase tracking-widest">Add more property photos</p>
+              </div>
+              <input
+                type="file"
+                className="hidden"
+                multiple
+                accept="image/*"
+                onChange={handleFileChange}
+                disabled={(formData.existingImages.length + formData.imageFiles.length) >= 5}
+              />
+            </label>
+
+            {(formData.existingImages.length > 0 || formData.imageFiles.length > 0) && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                {/* Existing Images */}
+                {formData.existingImages.map((img, idx) => (
+                  <div key={`existing-${idx}`} className="relative aspect-square rounded-2xl overflow-hidden border border-gray-100 group shadow-sm">
+                    <img
+                      src={img}
+                      alt="Existing"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeExistingImage(idx)}
+                      className="absolute top-2 right-2 bg-white/90 text-red-500 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                    >
+                      ✕
+                    </button>
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/40 text-[10px] text-white py-1 text-center font-bold">SAVED</div>
+                  </div>
+                ))}
+                {/* New Image Files */}
+                {formData.imageFiles.map((file, idx) => (
+                  <div key={`new-${idx}`} className="relative aspect-square rounded-2xl overflow-hidden border-2 border-indigo-200 group shadow-sm">
+                    <img
+                      src={URL.createObjectURL(file)}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeFile(idx)}
+                      className="absolute top-2 right-2 bg-white/90 text-red-500 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                    >
+                      ✕
+                    </button>
+                    <div className="absolute bottom-0 left-0 right-0 bg-indigo-600/80 text-[10px] text-white py-1 text-center font-bold">NEW</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

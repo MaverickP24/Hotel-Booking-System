@@ -94,10 +94,12 @@ export const hotelsAPI = {
   },
 
   create: async (hotelData) => {
+    const headers = getAuthHeaders();
+    if (hotelData instanceof FormData) delete headers['Content-Type'];
     const response = await fetch(`${API_URL}/hotels`, {
       method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(hotelData)
+      headers: headers,
+      body: hotelData instanceof FormData ? hotelData : JSON.stringify(hotelData)
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Failed to create hotel');
@@ -105,10 +107,12 @@ export const hotelsAPI = {
   },
 
   update: async (id, hotelData) => {
+    const headers = getAuthHeaders();
+    if (hotelData instanceof FormData) delete headers['Content-Type'];
     const response = await fetch(`${API_URL}/hotels/${id}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(hotelData)
+      headers: headers,
+      body: hotelData instanceof FormData ? hotelData : JSON.stringify(hotelData)
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Failed to update hotel');
@@ -170,10 +174,12 @@ export const roomsAPI = {
   },
 
   create: async (roomData) => {
+    const headers = getAuthHeaders();
+    if (roomData instanceof FormData) delete headers['Content-Type'];
     const response = await fetch(`${API_URL}/rooms`, {
       method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(roomData)
+      headers: headers,
+      body: roomData instanceof FormData ? roomData : JSON.stringify(roomData)
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Failed to create room');
@@ -181,10 +187,12 @@ export const roomsAPI = {
   },
 
   update: async (id, roomData) => {
+    const headers = getAuthHeaders();
+    if (roomData instanceof FormData) delete headers['Content-Type'];
     const response = await fetch(`${API_URL}/rooms/${id}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(roomData)
+      headers: headers,
+      body: roomData instanceof FormData ? roomData : JSON.stringify(roomData)
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Failed to update room');
@@ -492,10 +500,14 @@ export const usersAPI = {
   },
 
   updateProfile: async (userData) => {
+    const headers = getAuthHeaders();
+    if (userData instanceof FormData) {
+      delete headers['Content-Type'];
+    }
     const response = await fetch(`${API_URL}/users/profile`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(userData)
+      headers: headers,
+      body: userData instanceof FormData ? userData : JSON.stringify(userData)
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Failed to update profile');

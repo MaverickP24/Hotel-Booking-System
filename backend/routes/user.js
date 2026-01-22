@@ -24,12 +24,22 @@ router.get('/profile', protect, async (req, res) => {
   }
 });
 
+import upload from '../middleware/upload.js';
+
+// ... existing code ...
+
 // @route   PUT /api/users/profile
 // @desc    Update user profile
 // @access  Private
-router.put('/profile', protect, async (req, res) => {
+router.put('/profile', protect, upload.single('image'), async (req, res) => {
   try {
-    const { username, email, image, recentSearchedCities } = req.body;
+    const { username, email, recentSearchedCities } = req.body;
+    let image = req.body.image;
+
+    // Use Cloudinary URL if file was uploaded
+    if (req.file) {
+      image = req.file.path;
+    }
 
     const user = await User.findById(req.user._id);
 

@@ -239,12 +239,23 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+import upload from '../middleware/upload.js';
+
+// ... existing code ...
+
 // @route   POST /api/rooms
 // @desc    Create a room
 // @access  Private/HotelOwner
-router.post('/', protect, isHotelOwner, async (req, res) => {
+router.post('/', protect, isHotelOwner, upload.array('images', 5), async (req, res) => {
   try {
-    const { hotel, roomType, pricePerNight, amenities, images, maxGuests, description } = req.body;
+    const { hotel, roomType, pricePerNight, amenities, maxGuests, description } = req.body;
+    let images = req.body.images ? (Array.isArray(req.body.images) ? req.body.images : [req.body.images]) : [];
+
+    // Add Cloudinary URLs if files were uploaded
+    if (req.files && req.files.length > 0) {
+      const uploadedUrls = req.files.map(file => file.path);
+      images = [...images, ...uploadedUrls];
+    }
 
     // Check if hotel exists and user owns it
     const hotelDoc = await Hotel.findById(hotel);
@@ -291,7 +302,7 @@ router.post('/', protect, isHotelOwner, async (req, res) => {
 // @route   PUT /api/rooms/:id
 // @desc    Update a room
 // @access  Private/HotelOwner
-router.put('/:id', protect, isHotelOwner, async (req, res) => {
+router.put('/:id', protect, isHotelOwner, upload.array('images', 5), async (req, res) => {
   try {
     let room = await Room.findById(req.params.id).populate('hotel');
 
@@ -310,7 +321,22 @@ router.put('/:id', protect, isHotelOwner, async (req, res) => {
       });
     }
 
-    room = await Room.findByIdAndUpdate(req.params.id, req.body, {
+    const updateData = { ...req.body };
+
+    // Handle images array
+    if (updateData.images) {
+      updateData.images = Array.isArray(updateData.images) ? updateData.images : [updateData.images];
+    } else {
+      updateData.images = room.images;
+    }
+
+    // Add Cloudinary URLs if files were uploaded
+    if (req.files && req.files.length > 0) {
+      const uploadedUrls = req.files.map(file => file.path);
+      updateData.images = [...updateData.images, ...uploadedUrls];
+    }
+
+    room = await Room.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
       runValidators: true
     }).populate('hotel');
